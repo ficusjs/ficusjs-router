@@ -2,6 +2,7 @@
 site
 test
 examples
+cypress
 img
 .editorconfig
 .idea

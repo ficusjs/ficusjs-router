@@ -1,7 +1,7 @@
 {
   "name": "ficusjs-router",
-  "version": "0.1.0",
-  "description": "Lightweight standalone client-side router that supports path and hash routing plus web components",
+  "version": "1.0.0",
+  "description": "Lightweight standalone client-side router that supports history and hash routing",
   "main": "dist/router.js",
   "module": "dist/router.js",
   "types": "types/router.d.ts",
