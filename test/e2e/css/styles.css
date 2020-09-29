@@ -1,0 +1,13 @@
+body {
+  font-family: sans-serif;
+  font-weight: 200;
+}
+
+li {
+  line-height: 1.5;
+}
+
+li.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}

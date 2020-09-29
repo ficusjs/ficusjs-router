@@ -1,0 +1,6 @@
+node_modules
+test/snapshots
+.DS_Store
+.idea
+.vscode
+*.log
