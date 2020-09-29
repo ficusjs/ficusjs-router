@@ -7,3 +7,5 @@ img
 .editorconfig
 .idea
 .vscode
+cypress.json
+favicon.ico
