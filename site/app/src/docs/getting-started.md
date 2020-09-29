@@ -4,36 +4,66 @@ title: FicusJS router documentation - Getting started
 ---
 # Getting started
 
-The easiest way to try out FicusJS router is using a hello world example.
+The easiest way to try out FicusJS router is using a simple example.
 
 Create an `index.html` file and copy the following between the `<body>` tags.
 
 ```html
-<hello-world></hello-world>
+<top-nav></top-nav>
+<div id="router-outlet"></div>
 
 <script type="module">
-import { render as renderer, html } from 'https://unpkg.com/lit-html?module'
+import { createRouter } from 'https://unpkg.com/ficusjs-router?module'
 import { createComponent } from 'https://unpkg.com/ficusjs?module'
+import { render as renderer, html } from 'https://unpkg.com/lit-html?module'
 
-createComponent('hello-world', {
+createComponent('home-page', {
   renderer,
-  handleClick (e) {
-    window.alert('Hello to you!')
+  render () {
+    return html`<div>Welcome to the home page!</div>`
+  }
+})
+
+createComponent('page-one', {
+  renderer,
+  render () {
+    return html`<div>Welcome to the page one!</div>`
+  }
+})
+
+createComponent('page-two', {
+  renderer,
+  render () {
+    return html`<div>Welcome to the page two!</div>`
+  }
+})
+
+const router = createRouter([
+  { path: '', component: 'home-page' },
+  { path: '/one', component: 'page-one' },
+  { path: '/two', component: 'page-two' }
+], '#router-outlet', { mode: 'hash' })
+
+createComponent('top-nav', {
+  renderer,
+  navigateTo (path) {
+    router.push(path)
   },
   render () {
-    return html`<div>
-<p>Test component</p>
-<button type="button" @click="${this.handleClick}">Click me!</button>
-</div>`
+    return html`
+      <nav>
+        <ul>
+          <li><button type="button" @click="${() => this.navigateTo('/')}">Home</button></li>
+          <li><button type="button" @click="${() => this.navigateTo('/one')}">Page one</button></li>
+          <li><button type="button" @click="${() => this.navigateTo('/two')}">Page two</button></li>
+        </ul>
+      </nav>
+    `
   }
 })
 </script>
 ```
 
-> Alternatively, fork this Codepen to see it in action - [https://codepen.io/ducksoupdev/pen/GRZPqJO](https://codepen.io/ducksoupdev/pen/GRZPqJO)
+> Alternatively, fork this Codepen to see it in action - [https://codepen.io/ducksoupdev/pen/PoNvGwK](https://codepen.io/ducksoupdev/pen/PoNvGwK)
 
-The hello world example creates a new [custom element](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements)
-using the `createComponent` function and registers it to the `hello-world` tag. It uses the [lit-html](https://www.npmjs.com/package/lit-html) renderer for creating HTML from [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals).
-
-Once registered, the tag can be used multiple times in HTML and instances can be programmatically obtained using [`document.querySelector`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector)
-or [`element.querySelector`](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelector)
+The example creates a set of page components, a page navigation component and a new router using hash mode.
