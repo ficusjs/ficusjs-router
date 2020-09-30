@@ -133,13 +133,16 @@ class Router {
       return window.__ficusjs__.router
     }
 
-    this.rootOutletSelector = rootOutletSelector
+    this._rootOutletSelector = rootOutletSelector
 
     // process routes
-    this.routes = this._processRoutes(routes)
+    this._routes = this._processRoutes(routes)
 
     // process router options
-    this.routerOptions = this._processOptions(options)
+    this._routerOptions = this._processOptions(options)
+
+    // create an outlet cache
+    this._outletCache = new WeakMap()
 
     // add the popstate event listener for history changes
     if (typeof window !== 'undefined') {
@@ -165,7 +168,7 @@ class Router {
         search: window.location.search,
         state: window.history.state
       }
-      if (this.routerOptions.mode === 'hash') {
+      if (this._routerOptions.mode === 'hash') {
         loc.pathname = this._getHashPathname()
         loc.hash = ''
       }
@@ -175,7 +178,7 @@ class Router {
 
   // getter for the options
   get options () {
-    return this.routerOptions
+    return this._routerOptions
   }
 
   /**
@@ -183,7 +186,7 @@ class Router {
    * @param options
    */
   setOptions (options = {}) {
-    this.routerOptions = this._processOptions(options)
+    this._routerOptions = this._processOptions(options)
   }
 
   /**
@@ -191,7 +194,7 @@ class Router {
    * @param routes
    */
   addRoutes (routes) {
-    this.routes = [...this.routes, ...this._processRoutes(routes)]
+    this._routes = [...this._routes, ...this._processRoutes(routes)]
   }
 
   /**
@@ -230,7 +233,7 @@ class Router {
    * @private
    */
   _findRoute (pathname) {
-    return this.routes.find(r => r.matcher(pathname) !== undefined)
+    return this._routes.find(r => r.matcher(pathname) !== undefined)
   }
 
   /**
@@ -292,12 +295,12 @@ class Router {
    * Method to process router options
    * @param routes
    * @param options
-   * @returns {undefined|Object}
+   * @returns {Object}
    * @private
    */
   _processOptions (opts) {
     const options = {
-      mode: 'history',
+      mode: 'history', // or 'hash'
       autoStart: true,
       changeHistoryState: true,
       warnOnMissingOutlets: false,
@@ -346,14 +349,14 @@ class Router {
       return
     }
 
-    waitFor(() => document.querySelector(this.rootOutletSelector))
+    waitFor(() => document.querySelector(this._rootOutletSelector))
       .then(routerOutlet => {
         const ok = Object.keys(outlets)
 
-        // find any outlets and clear them if they're are not a defined outlet for the route
+        // find any outlets and clear them if they're not a defined outlet for the route
         const namedOutlets = document.querySelectorAll('[data-router-outlet]')
         if (namedOutlets.length) {
-          [...namedOutlets].forEach(o => elementEmpty(o))
+          [...namedOutlets].filter(o => o !== routerOutlet).forEach(o => elementEmpty(o))
         }
 
         // render the template into the outlet component
@@ -369,7 +372,7 @@ class Router {
                   ? result.then(template => this._renderIntoAllOutlets(template, allOutlets))
                   : this._renderIntoAllOutlets(result, allOutlets)
               })
-              .catch(e => this.routerOptions.warnOnMissingOutlets && console.warn(e))
+              .catch(e => this._routerOptions.warnOnMissingOutlets && console.warn(e))
           })
         }
       })
@@ -383,7 +386,11 @@ class Router {
    * @private
    */
   _renderIntoOutlet (template, routerOutlet) {
-    this.routerOptions.render(template, routerOutlet)
+    if (this._isSameOutletContent(template, routerOutlet)) {
+      return
+    }
+    this._routerOptions.render(template, routerOutlet)
+    this._outletCache.set(routerOutlet, template)
   }
 
   /**
@@ -397,6 +404,20 @@ class Router {
       const ro = routerOutlets[i]
       this._renderIntoOutlet(template, ro)
     }
+  }
+
+  /**
+   * Check if what has already been rendered is the same content
+   * @param template
+   * @param routerOutlet
+   * @returns {boolean}
+   * @private
+   */
+  _isSameOutletContent (template, routerOutlet) {
+    if (typeof template === 'string' && this._outletCache.has(routerOutlet) && this._outletCache.get(routerOutlet) === template) {
+      return true
+    }
+    return false
   }
 
   /**
@@ -443,7 +464,7 @@ class Router {
     }
 
     if (typeof path === 'object') {
-      if (this.routerOptions.mode === 'history' && !path.pathname) throw new Error(`Unable to navigate to: ${path}`)
+      if (this._routerOptions.mode === 'history' && !path.pathname) throw new Error(`Unable to navigate to: ${path}`)
       np = path.pathname || this.location.pathname
       pathname = np
       if (path.search) {
@@ -462,12 +483,12 @@ class Router {
       return
     }
 
-    if (this.routerOptions.mode === 'hash') {
+    if (this._routerOptions.mode === 'hash') {
       np = `${window.location.pathname}${search}#${pathname}`
     }
 
     // set the state
-    if (this.routerOptions.changeHistoryState) {
+    if (this._routerOptions.changeHistoryState) {
       this._setState(np, ns, replaceHistory)
     }
 
@@ -484,13 +505,13 @@ class Router {
    * @private
    */
   _resolveRoute (path) {
-    if (this.routerOptions.resolveRoute) {
+    if (this._routerOptions.resolveRoute) {
       const route = this._findRoute(path)
       let params = {
         ...this._getQueryStringParams()
       }
       const context = {
-        ...this.routerOptions.context,
+        ...this._routerOptions.context,
         router: this,
         route: route || {},
         path,
@@ -503,7 +524,7 @@ class Router {
         }
         context.route = route
         context.params = params
-        const routeActionResult = this.routerOptions.resolveRoute(context, params)
+        const routeActionResult = this._routerOptions.resolveRoute(context, params)
         if (routeActionResult) {
           return hasKey(routeActionResult, 'template') && hasKey(routeActionResult, 'outlets')
             ? this._renderRouteActionResult(path, context, routeActionResult.template, routeActionResult.outlets)
@@ -512,7 +533,7 @@ class Router {
           return this._findAndRenderRoute(path)
         }
       } else {
-        const routeActionResult = this.routerOptions.resolveRoute(context, params)
+        const routeActionResult = this._routerOptions.resolveRoute(context, params)
         if (routeActionResult) {
           return hasKey(routeActionResult, 'template') && hasKey(routeActionResult, 'outlets')
             ? this._renderRouteActionResult(path, context, routeActionResult.template, routeActionResult.outlets)
@@ -542,7 +563,7 @@ class Router {
           ...this._getUrlParams(path, route)
         }
         const context = {
-          ...this.routerOptions.context,
+          ...this._routerOptions.context,
           router: this,
           route,
           path,
@@ -624,14 +645,14 @@ class Router {
    * @private
    */
   _renderError (path, error) {
-    console.error(`Dude, a router error occurred for path '${path}'`, error)
-    if (this.routerOptions.errorHandler) {
+    console.error(`A router error occurred for path '${path}'`, error)
+    if (this._routerOptions.errorHandler) {
       const err = {
         message: error.message,
         status: error.message === 'not_found' ? 404 : 500
       }
       const context = {
-        ...this.routerOptions.context,
+        ...this._routerOptions.context,
         router: this,
         path,
         location: {
@@ -639,7 +660,7 @@ class Router {
           pathname: path
         }
       }
-      const errorTemplate = this.routerOptions.errorHandler(err, context)
+      const errorTemplate = this._routerOptions.errorHandler(err, context)
       if (isPromise(errorTemplate)) {
         errorTemplate
           .then(template => {

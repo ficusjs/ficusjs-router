@@ -1,12 +1,20 @@
 /**
  * Function to render a router outlet
- * @param {string} what A component tag
+ * @param {string|HTMLElement} what A component tag, HTML snippet or DOM element
  * @param {HTMLElement|string} where An element to render into
  */
 import { elementFromString } from './element-from-string.js'
 import { isElement } from './is-element.js'
 
 export function renderOutlet (what, where) {
+  // check for an outlet
+  const outlet = typeof where === 'string' ? document.querySelector(where) : where
+  if (!outlet) {
+    console.warn(`Unable to find outlet: ${where}`)
+    return
+  }
+
+  // decide what to render into the outlet
   let element
   if (isElement(what)) {
     element = what
@@ -18,11 +26,7 @@ export function renderOutlet (what, where) {
       element = elementFromString(what)
     }
   }
-  const outlet = typeof where === 'string' ? document.querySelector(where) : where
-  if (!outlet) {
-    console.warn(`Dude, I cannot find outlet: ${where}`)
-    return
-  }
+
   outlet.appendChild(element)
 
   // set the data attribute so we can clear the outlet later
