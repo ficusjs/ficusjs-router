@@ -5,6 +5,7 @@
  */
 import { elementFromString } from './element-from-string.js'
 import { isElement } from './is-element.js'
+import { elementEmpty } from './element-empty.js'
 
 export function renderOutlet (what, where) {
   // check for an outlet
@@ -27,6 +28,7 @@ export function renderOutlet (what, where) {
     }
   }
 
+  elementEmpty(outlet)
   outlet.appendChild(element)
 
   // set the data attribute so we can clear the outlet later
