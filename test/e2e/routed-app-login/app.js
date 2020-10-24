@@ -1,4 +1,4 @@
-import { html, createComponent } from '../util/component.js'
+import { html, createComponentWithStore } from '../util/component.js'
 import { getRouter } from './router.js'
 import { getStore } from './store.js'
 
@@ -36,21 +36,24 @@ function errorHandler (error, context) {
 
 createTopNavComponent(router)
 
-createComponent('mock-routed-app-login', {
-  store,
-  render () {
-    return html`<div>
-<style>
-.this-is-active {
-  color: #fff;
-  background-color: darkgreen;
-}
-.this-is-active:hover {
-  color: #fff;
-}
-</style>
-<top-nav></top-nav>
-<div id="router-outlet"></div>
-</div>`
+createComponentWithStore(
+  'mock-routed-app-login',
+  {
+    render () {
+      return html`<div>
+  <style>
+  .this-is-active {
+    color: #fff;
+    background-color: darkgreen;
   }
-})
+  .this-is-active:hover {
+    color: #fff;
+  }
+  </style>
+  <top-nav></top-nav>
+  <div id="router-outlet"></div>
+  </div>`
+    }
+  },
+  store
+)

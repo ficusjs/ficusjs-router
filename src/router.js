@@ -365,7 +365,10 @@ class Router {
         // do we have named outlets to render?
         if (ok.length) {
           ok.forEach(k => {
-            waitFor(() => document.querySelectorAll(k))
+            waitFor(() => {
+              const namedOutlets = document.querySelectorAll(k)
+              return namedOutlets.length > 0 ? namedOutlets : false
+            })
               .then(allOutlets => {
                 const result = outlets[k](context, context && context.params)
                 isPromise(result)
