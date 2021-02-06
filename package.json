@@ -1,6 +1,6 @@
 {
-  "name": "ficusjs-router",
-  "version": "1.1.2",
+  "name": "@ficusjs/router",
+  "version": "2.0.0",
   "description": "Lightweight standalone client-side router that supports history and hash routing",
   "main": "dist/router.js",
   "module": "dist/router.js",
