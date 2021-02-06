@@ -16,7 +16,7 @@ Import the router creator function into your Javascript main file:
 
 ```js
 // import the createRouter function
-import { createRouter } from 'https://unpkg.com/ficusjs-router?module'
+import { createRouter } from 'https://cdn.skypack.dev/@ficusjs/router'
 
 // create list of routes
 const routes = [
@@ -55,7 +55,7 @@ The `getRouter` function is a quick way to retrieve the router instance.
 
 ```js
 // import the function
-import { getRouter } from 'https://unpkg.com/ficusjs?module'
+import { getRouter } from 'https://cdn.skypack.dev/ficusjs'
 
 // use it within a component
 createComponent('my-page-component', {

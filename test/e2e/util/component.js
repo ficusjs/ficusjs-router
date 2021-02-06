@@ -1,5 +1,5 @@
-import { render as renderer, html } from 'https://unpkg.com/lit-html?module'
-import { createComponent as componentCreator, createStore, withStore } from 'https://unpkg.com/ficusjs?module'
+import { renderer, html } from 'https://cdn.skypack.dev/@ficusjs/renderers/dist/lit-html.js'
+import { createComponent as componentCreator, createStore, withStore } from 'https://cdn.skypack.dev/ficusjs'
 import { navigateTo } from './methods.js'
 
 function createComponent (tagName, options) {

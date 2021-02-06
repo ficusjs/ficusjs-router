@@ -12,7 +12,7 @@ We recommend using native ES modules in the browser.
 
 ```html
 <script type="module">
-  import { createRouter, getRouter } from 'https://unpkg.com/ficusjs-router?module'
+  import { createRouter, getRouter } from 'https://cdn.skypack.dev/@ficusjs/router'
 </script>
 ```
 
@@ -25,7 +25,7 @@ FicusJS router is also available on [unpkg](https://unpkg.com/browse/ficusjs-rou
 FicusJS router works nicely with build tools such as Webpack or Rollup. If you are using a NodeJS tool, you can install the NPM package.
 
 ```sh
-npm install ficusjs-router
+npm install @ficusjs/router
 ```
 
 ## Available builds

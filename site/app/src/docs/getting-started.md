@@ -13,9 +13,9 @@ Create an `index.html` file and copy the following between the `<body>` tags.
 <div id="router-outlet"></div>
 
 <script type="module">
-import { createRouter } from 'https://unpkg.com/ficusjs-router?module'
-import { createComponent } from 'https://unpkg.com/ficusjs?module'
-import { render as renderer, html } from 'https://unpkg.com/lit-html?module'
+import { createRouter } from 'https://cdn.skypack.dev/@ficusjs/router'
+import { createComponent } from 'https://cdn.skypack.dev/ficusjs'
+import { renderer, html } from 'https://cdn.skypack.dev/@ficusjs/renderers/dist/lit-html.js'
 
 createComponent('home-page', {
   renderer,
