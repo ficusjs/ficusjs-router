@@ -16,9 +16,7 @@ We recommend using native ES modules in the browser.
 </script>
 ```
 
-You can browse the source of the NPM package at [cdn.jsdelivr.net/npm/ficusjs-router](https://cdn.jsdelivr.net/npm/ficusjs-router/).
-
-FicusJS router is also available on [unpkg](https://unpkg.com/browse/ficusjs-router/).
+FicusJS router is available on [Skypack](https://www.skypack.dev/view/@ficusjs/router).
 
 ## NPM
 

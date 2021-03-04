@@ -1,6 +1,6 @@
 {
   "name": "@ficusjs/router",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Lightweight standalone client-side router that supports history and hash routing",
   "main": "dist/router.js",
   "module": "dist/router.js",
@@ -15,6 +15,16 @@
     "serve": "http-server",
     "serve:silent": "http-server -s"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ficusjs/ficusjs-router.git"
+  },
+  "keywords": [
+    "ficusjs",
+    "frontend",
+    "web-components",
+    "router"
+  ],
   "author": "Matt Levy",
   "license": "ISC",
   "devDependencies": {
@@ -29,7 +39,7 @@
   },
   "exports": {
     ".": {
-      "import": "dist/router.js"
+      "import": "./dist/router.js"
     }
   }
 }
