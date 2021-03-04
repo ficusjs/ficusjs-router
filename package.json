@@ -1,6 +1,6 @@
 {
   "name": "@ficusjs/router",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Lightweight standalone client-side router that supports history and hash routing",
   "main": "dist/router.js",
   "module": "dist/router.js",
@@ -18,13 +18,18 @@
   "author": "Matt Levy",
   "license": "ISC",
   "devDependencies": {
-    "cypress": "5.4.0",
+    "cypress": "6.6.0",
     "http-server": "0.12.3",
     "npm-run-all": "4.1.5",
     "open-cli": "6.0.1",
-    "rollup": "2.32.1",
+    "rollup": "2.40.0",
     "rollup-plugin-terser": "7.0.2",
-    "standard": "15.0.0",
-    "start-server-and-test": "1.11.5"
+    "standard": "16.0.3",
+    "start-server-and-test": "1.12.0"
+  },
+  "exports": {
+    ".": {
+      "import": "dist/router.js"
+    }
   }
 }

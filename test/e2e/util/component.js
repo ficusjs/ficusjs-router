@@ -1,4 +1,4 @@
-import { renderer, html } from 'https://cdn.skypack.dev/@ficusjs/renderers/dist/lit-html.js'
+import { renderer, html } from 'https://cdn.skypack.dev/@ficusjs/renderers/lit-html'
 import { createComponent as componentCreator, createStore, withStore } from 'https://cdn.skypack.dev/ficusjs'
 import { navigateTo } from './methods.js'
 
