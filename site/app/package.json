@@ -13,6 +13,7 @@
     "clean": "rimraf dist",
     "copy:js": "ncp src/js dist/js",
     "copy:favicon": "ncp src/favicon.ico dist/favicon.ico",
+    "copy:apple-touch-icon": "ncp src/apple-touch-icon.png dist/apple-touch-icon.png",
     "copy:img": "ncp src/img dist/img",
     "copy:manifest": "ncp src/manifest.json dist/manifest.json",
     "dev": "cross-env NODE_ENV=development eleventy --input=src --output=dist --serve",
@@ -22,18 +23,18 @@
   },
   "author": "Matt Levy",
   "devDependencies": {
-    "@11ty/eleventy": "^0.11.0",
+    "@11ty/eleventy": "^0.12.1",
     "concat-cli": "4.0.0",
     "cssnano": "4.1.10",
-    "cross-env": "7.0.2",
+    "cross-env": "7.0.3",
     "mkdirp": "1.0.4",
     "ncp": "2.0.0",
     "npm-run-all": "4.1.5",
-    "postcss": "8.0.9",
-    "postcss-cli": "8.0.0",
+    "postcss": "8.2.8",
+    "postcss-cli": "8.3.1",
     "rimraf": "3.0.2",
-    "standard": "14.3.4",
-    "terser": "5.3.2",
-    "workbox-cli": "5.1.4"
+    "standard": "16.0.3",
+    "terser": "5.6.1",
+    "workbox-cli": "6.1.2"
   }
 }

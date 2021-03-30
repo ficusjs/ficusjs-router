@@ -1,6 +1,6 @@
 # FicusJS router
 
-<img src="img/ficusjs.svg" alt="FicusJS" width="150" align="right">
+<img src="img/ficus-icon.svg" alt="FicusJS" width="150" align="right">
 
 Lightweight standalone client-side router that supports history and hash routing.
 
