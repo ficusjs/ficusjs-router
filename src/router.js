@@ -354,7 +354,7 @@ class Router {
         const ok = Object.keys(outlets)
 
         // find any outlets and clear them if they're not a defined outlet for the route
-        const namedOutlets = document.querySelectorAll('[data-router-outlet]')
+        const namedOutlets = document.querySelectorAll('[data-router-outlet]:not([sticky])')
         if (namedOutlets.length) {
           [...namedOutlets].filter(o => o !== routerOutlet).forEach(o => elementEmpty(o))
         }
