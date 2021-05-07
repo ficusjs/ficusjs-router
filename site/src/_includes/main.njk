@@ -65,8 +65,9 @@
       </div>
 
       <main class="[ fd-doc-layout-toc ] [ fu-spacing-pl-05 fu-spacing-pr-05 fu-spacing-pt-05 fu-spacing-pb-05 fu-lg-layout-pl-06 fu-lg-layout-pr-06 fu-lg-layout-pt-06 fu-lg-layout-pb-06 fu-flow ]">
-        <article class="[ fd-doc-article ] [ fu-flow ]">
+        <article class="[ fd-doc-article ] [ fu-flow fu-spacing-pb-09 ]">
           {{ content | safe }}
+          {% include "page-links.njk" %}
         </article>
         {% if content | toc %}
         <aside class="[ fd-sticky-aside ]">

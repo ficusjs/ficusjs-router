@@ -1,0 +1,14 @@
+{% set previousPost = getPreviousPage(page) %}
+{% set nextPost = getNextPage(page) %}
+<div class="[ fd-page-links ]">
+  <div>
+    {% if previousPost %}
+      <p><a href="{{ previousPost.url }}">← {{ previousPost.title }}</a></p>
+    {% endif %}
+  </div>
+  <div>
+    {% if nextPost %}
+      <a href="{{ nextPost.url }}">{{ nextPost.title }} →</a>
+    {% endif %}
+  </div>
+</div>

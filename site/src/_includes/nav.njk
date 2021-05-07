@@ -1,47 +1,10 @@
-<h2 class="fu-text-h6 fu-text-transform-uppercase fu-spacing-ml-03 fu-spacing-mr-03 fu-spacing-mb-03 fu-lg-spacing-ml-07 fu-lg-spacing-mr-07">Getting started</h2>
-<nav class="[ fc-nav ] [ fu-spacing-mb-07 fu-lg-spacing-ml-06 fu-lg-spacing-mr-06 ]">
-  <ul class="fc-nav__list">
-    <li><a href="/getting-started" class="doc__nav-item">Getting started</a></li>
-    <li><a href="/installation" class="doc__nav-item">Installation</a></li>
-  </ul>
-</nav>
-
-<h2 class="fu-text-h6 fu-text-transform-uppercase fu-spacing-ml-03 fu-spacing-mr-03 fu-spacing-mb-03 fu-lg-spacing-ml-07 fu-lg-spacing-mr-07">Features</h2>
-<nav class="[ fc-nav ] [ fu-spacing-mb-07 fu-lg-spacing-ml-06 fu-lg-spacing-mr-06 ]">
-  <ul class="fc-nav__list">
-    <li><a href="/features" class="doc__nav-item">Introduction</a></li>
-    <li><a href="/features/example" class="doc__nav-item">Example</a></li>
-    <li><a href="/features/create-router" class="doc__nav-item">createRouter function</a></li>
-    <li><a href="/features/get-router" class="doc__nav-item">getRouter function</a></li>
-    <li><a href="/features/routes" class="doc__nav-item">Routes</a></li>
-    <li><a href="/features/options" class="doc__nav-item">Options</a></li>
-    <li><a href="/features/modes" class="doc__nav-item">Modes</a></li>
-    <li><a href="/features/starting-programmatically" class="doc__nav-item">Starting programmatically</a></li>
-    <li><a href="/features/context" class="doc__nav-item">Context</a></li>
-    <li><a href="/features/url-parameters" class="doc__nav-item">URL parameters</a></li>
-    <li><a href="/features/async-routes" class="doc__nav-item">Async routes</a></li>
-    <li><a href="/features/redirects" class="doc__nav-item">Redirects</a></li>
-    <li><a href="/features/outlets" class="doc__nav-item">Outlets</a></li>
-    <li><a href="/features/navigation" class="doc__nav-item">Navigation</a></li>
-    <li><a href="/features/location" class="doc__nav-item">Location</a></li>
-    <li><a href="/features/lazy-load-views" class="doc__nav-item">Lazy load views</a></li>
-    <li><a href="/features/server-side-routing" class="doc__nav-item">Server-side routing</a></li>
-  </ul>
-</nav>
-
-<h2 class="fu-text-h6 fu-text-transform-uppercase fu-spacing-ml-03 fu-spacing-mr-03 fu-spacing-mb-03 fu-lg-spacing-ml-07 fu-lg-spacing-mr-07">Usage</h2>
-<nav class="[ fc-nav ] [ fu-spacing-mb-07 fu-lg-spacing-ml-06 fu-lg-spacing-mr-06 ]">
-  <ul class="fc-nav__list">
-    <li><a href="/browser-support" class="doc__nav-item">Browser support</a></li>
-    <li><a href="/going-build-less" class="doc__nav-item">Going build-less</a></li>
-    <li><a href="https://github.com/ficusjs/ficusjs-router/blob/master/CHANGELOG.md" target="_blank" rel="noopener noreferrer" class="doc__nav-item">Changelog</a></li>
-  </ul>
-</nav>
-
-<h2 class="fu-text-h6 fu-text-transform-uppercase fu-spacing-ml-03 fu-spacing-mr-03 fu-spacing-mb-03 fu-lg-spacing-ml-07 fu-lg-spacing-mr-07">Helpers</h2>
-<nav class="[ fc-nav ] [ fu-spacing-mb-07 fu-lg-spacing-ml-06 fu-lg-spacing-mr-06 ]">
-  <ul class="fc-nav__list">
-    <li><a href="/ficusjs" class="doc__nav-item">FicusJS</a></li>
-    <li><a href="/script" class="doc__nav-item">FicusJS script loader</a></li>
-  </ul>
-</nav>
+{% for name, items in nav %}
+  <h2 class="fu-text-h6 fu-text-transform-uppercase fu-spacing-mt-07 fu-spacing-ml-03 fu-spacing-mr-03 fu-spacing-mb-03 fu-lg-spacing-mt-00 fu-lg-spacing-ml-07 fu-lg-spacing-mr-07">{{ name }}</h2>
+  <nav class="[ fc-nav ] [ fu-spacing-mb-07 fu-lg-spacing-ml-06 fu-lg-spacing-mr-06 ]">
+    <ul class="fc-nav__list">
+      {% for entry in items %}
+        <li><a href="{{ entry.url }}" class="doc__nav-item">{{ entry.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+{% endfor %}
