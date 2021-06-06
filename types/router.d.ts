@@ -27,7 +27,7 @@ export interface RouteContext {
 
 type RedirectObject = { redirect: string }
 
-export type ActionResult = RedirectObject | RouteOrOutletHTMLResult | Promise<RouteOrOutletHTMLResult> | { template: RouteOrOutletHTMLResult | Promise<RouteOrOutletHTMLResult>, outlets?: Outlets }
+export type ActionResult = boolean | Error | RedirectObject | RouteOrOutletHTMLResult | Promise<RouteOrOutletHTMLResult> | { template: RouteOrOutletHTMLResult | Promise<RouteOrOutletHTMLResult>, outlets?: Outlets }
 
 export type ResolveRoute = (context: RouteContext, params: QueryParams) => ActionResult
 
@@ -71,8 +71,8 @@ type Routes = Array<Route>
 
 declare class Router {
   constructor(routes: Routes, rootOutletSelector: string, options?: RouterOptions)
-  push (location: string): void
-  replace (location: string): void
+  push (location: string): Promise<boolean>
+  replace (location: string): Promise<boolean>
   go (n: number): void
   goBack (): void
   goForward (): void
