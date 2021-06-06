@@ -3,9 +3,9 @@
  * @param {string|HTMLElement} what A component tag, HTML snippet or DOM element
  * @param {HTMLElement|string} where An element to render into
  */
-import { elementFromString } from './element-from-string.js'
-import { isElement } from './is-element.js'
-import { elementEmpty } from './element-empty.js'
+import { elementFromString } from './element-from-string.mjs'
+import { isElement } from './is-element.mjs'
+import { elementEmpty } from './element-empty.mjs'
 
 export function renderOutlet (what, where) {
   // check for an outlet

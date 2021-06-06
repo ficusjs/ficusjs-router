@@ -1,4 +1,4 @@
-type RouteOrOutletHTMLResult = string | HTMLElement
+export type RouteOrOutletHTMLResult = string | HTMLElement
 
 export interface Outlets {
   [outletName: string]: () => RouteOrOutletHTMLResult | Promise<RouteOrOutletHTMLResult>
@@ -6,6 +6,15 @@ export interface Outlets {
 
 export interface QueryParams {
   [paramName: string]: string | string[]
+}
+
+export interface RouteLocation {
+  host: string
+  protocol: string
+  href: string
+  pathname: string
+  search: string
+  hash: string
 }
 
 export interface RouteContext {

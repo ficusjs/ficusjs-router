@@ -16,6 +16,7 @@ module.exports = {
     { url: '/features/url-parameters/', title: 'URL parameters' },
     { url: '/features/async-routes/', title: 'Async routes' },
     { url: '/features/redirects/', title: 'Redirects' },
+    { url: '/features/guards/', title: 'Guards' },
     { url: '/features/outlets/', title: 'Outlets' },
     { url: '/features/navigation/', title: 'Navigation' },
     { url: '/features/location/', title: 'Location' },

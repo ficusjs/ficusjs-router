@@ -8,15 +8,15 @@ import './components/nav.js'
 router.setOptions({
   ...router.options,
   resolveRoute (context, params) {
-    if (context.path !== '/login' && !store.state.userLoggedIn) {
+    if (context.location.pathname !== '/login' && !store.state.userLoggedIn) {
       return { redirect: '/login' }
     }
 
-    if (context.path === '/' && store.state.userLoggedIn) {
+    if (context.location.pathname === '/' && store.state.userLoggedIn) {
       return { redirect: '/home' }
     }
 
-    if (context.path === '/logout') {
+    if (context.location.pathname === '/logout') {
       store.dispatch('setUserLoggedIn', false)
       return { redirect: '/' }
     }

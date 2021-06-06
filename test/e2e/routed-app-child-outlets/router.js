@@ -1,4 +1,4 @@
-import { createRouter } from '../../../src/router.js'
+import { createRouter } from '../../../src/router.mjs'
 
 import './contents/foo.js'
 

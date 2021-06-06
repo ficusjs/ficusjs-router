@@ -88,7 +88,7 @@ describe('Sticky outlets', () => {
 
     it('should render text in the title outlet', () => {
       cy.get('#title')
-        .should('contain.text', 'Page two title outlet')
+        .should('contain.text', 'Home title outlet')
     })
   })
 })

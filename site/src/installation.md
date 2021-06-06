@@ -32,4 +32,4 @@ FicusJS router is only available as an ES module. For legacy browsers or alterna
 
 The following builds are available.
 
-- [Route](docs/router) `dist/router.js`
+- `dist/router.mjs`

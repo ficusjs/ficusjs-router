@@ -1,5 +1,5 @@
 import { createStore } from '../util/component.js'
-import { getRouter } from '../../../src/router.js'
+import { getRouter } from '../../../src/router.mjs'
 
 let store = null
 

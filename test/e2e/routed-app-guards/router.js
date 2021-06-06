@@ -1,12 +1,11 @@
 import { createRouter } from '../../../src/router.mjs'
 
 export const router = createRouter([
-  { path: '', component: 'home-page' },
-  { path: '/one', component: 'page-one' },
-  { path: '/two', component: 'page-two' },
-  { path: '/error', action: () => Promise.reject(new Error('Action error')) }
+  { path: '/test/e2e/routed-app-guards', component: 'home-page' },
+  { path: '/test/e2e/routed-app-guards/one', component: 'page-one' },
+  { path: '/test/e2e/routed-app-guards/cancelled', action: () => false },
+  { path: '/test/e2e/routed-app-guards/error', action: () => new Error('Action error') }
 ], '#router-outlet', {
-  mode: 'hash',
   errorHandler: (error, context) => {
     return error.status === 404 ? `<page-not-found path="${context.location.pathname}"></page-not-found>` : `<page-error message="${error.message}"></page-error>`
   }

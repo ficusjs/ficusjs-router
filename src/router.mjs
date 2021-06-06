@@ -1,10 +1,10 @@
-import { waitFor } from './util/wait-for.js'
-import { stripTrailingSlash } from './util/slashes.js'
-import { isPromise } from './util/is-promise.js'
-import { hasKey } from './util/object-has-key.js'
-import { elementEmpty } from './util/element-empty.js'
-import { renderOutlet as render } from './util/render-outlet.js'
-import { flattenRoutes } from './util/flatten-routes.js'
+import { waitFor } from './util/wait-for.mjs'
+import { stripTrailingSlash } from './util/slashes.mjs'
+import { isPromise } from './util/is-promise.mjs'
+import { hasKey } from './util/object-has-key.mjs'
+import { elementEmpty } from './util/element-empty.mjs'
+import { renderOutlet } from './util/render-outlet.mjs'
+import { flattenRoutes } from './util/flatten-routes.mjs'
 
 class UrlSearchOrHashParams {
   constructor (url) {
@@ -128,7 +128,7 @@ class UrlSearchOrHashParams {
 }
 
 class Router {
-  constructor (routes, rootOutletSelector, options = {}) {
+  constructor (routes, rootOutletSelector, options) {
     if (typeof window !== 'undefined' && window.__ficusjs__ && window.__ficusjs__.router) {
       return window.__ficusjs__.router
     }
@@ -147,8 +147,11 @@ class Router {
     // add the popstate event listener for history changes
     if (typeof window !== 'undefined') {
       window.addEventListener('popstate', () => {
-        this._resolveRoute(this.location.pathname)
-          .catch(e => this._renderError(this.location.pathname, e))
+        this._findAndRenderRoute(this.location)
+          .catch(e => {
+            this._renderError(this.location, e)
+            throw e
+          })
       })
       window.__ficusjs__ = window.__ficusjs__ || {}
       window.__ficusjs__.router = window.__ficusjs__.router || this
@@ -183,7 +186,7 @@ class Router {
 
   /**
    * Set the router options
-   * @param options
+   * @param {Object|undefined} options
    */
   setOptions (options = {}) {
     this._routerOptions = this._processOptions(options)
@@ -191,7 +194,7 @@ class Router {
 
   /**
    * Add more routes to the router
-   * @param routes
+   * @param {Routes} routes
    */
   addRoutes (routes) {
     this._routes = [...this._routes, ...this._processRoutes(routes)]
@@ -199,7 +202,7 @@ class Router {
 
   /**
    * Check if the path name matches a route
-   * @param pathname
+   * @param {string} pathname
    * @returns {boolean}
    */
   hasRoute (pathname) {
@@ -208,28 +211,29 @@ class Router {
 
   /**
    * Get the query string params as an object
+   * @param {RouteLocation} location
    * @returns {Object|undefined}
    * @private
    */
-  _getQueryStringParams () {
-    return Object.fromEntries(new UrlSearchOrHashParams(this.location.href).entries())
+  _getQueryStringParams (location) {
+    return Object.fromEntries(new UrlSearchOrHashParams(location.href).entries())
   }
 
   /**
    * Get the URL params as an object
-   * @param path
+   * @param {RouteLocation} location
    * @returns {Object|undefined}
    * @private
    */
-  _getUrlParams (path, route) {
-    const params = route.matcher(path)
+  _getUrlParams (location, route) {
+    const params = route.matcher(location.pathname)
     return typeof params === 'string' ? undefined : params
   }
 
   /**
    * Match a route by pathname
    * @param {String} pathname
-   * @returns {Object}
+   * @returns {Route}
    * @private
    */
   _findRoute (pathname) {
@@ -292,19 +296,18 @@ class Router {
   }
 
   /**
-   * Method to process router options
-   * @param routes
-   * @param options
-   * @returns {Object}
+   * Process router options
+   * @param {RouterOptions} opts
+   * @returns {RouterOptions}
    * @private
    */
-  _processOptions (opts) {
+  _processOptions (opts = {}) {
+    const that = this
     const options = {
       mode: 'history', // or 'hash'
       autoStart: true,
       changeHistoryState: true,
       warnOnMissingOutlets: false,
-      render,
       ...opts
     }
 
@@ -313,13 +316,18 @@ class Router {
       return {
         ...options,
         resolveRoute (context, params) {
-          if (typeof context.route.action === 'function') {
+          if (context.route && typeof context.route.action === 'function') {
             return {
-              template: context.route.action(context, params),
+              template: new Promise((resolve, reject) => {
+                const template = context.route.action(context, params)
+                resolve(template)
+              }).catch(e => {
+                that._renderError(context.location, e)
+                throw e
+              }),
               outlets: context.route.outlets
             }
           }
-          return undefined
         }
       }
     } else if (options.resolveRoute) {
@@ -331,26 +339,51 @@ class Router {
         }
       }
     }
-
     return options
   }
 
   /**
-   * Render a template for a path
-   * @param path
-   * @param template
+   * Render an template for a route
+   * @param {RouteLocation} location
+   * @param {object} context
+   * @param {ActionResult} result
+   * @param {Outlets} outlets
+   * @returns {Promise}
    * @private
    */
-  _render (path, context, template, outlets = {}) {
+  _render (location, context, result, outlets = {}) {
+    return isPromise(result)
+      ? result.then(template => this._performRender(location, context, template, outlets))
+      : this._performRender(location, context, result, outlets)
+  }
+
+  /**
+   * Perform a render
+   * @param {RouteLocation} location
+   * @param {object} context
+   * @param {ActionResult} template
+   * @param {Outlets} outlets
+   * @returns {Promise}
+   * @private
+   */
+  _performRender (location, context, template, outlets) {
     // is the template a redirect?
-    if (template.redirect) {
-      const state = { from: path }
-      this.push(template.redirect, state)
-      return
+    if (typeof template === 'object' && template.redirect) {
+      return Promise.resolve(template)
     }
 
-    waitFor(() => document.querySelector(this._rootOutletSelector))
-      .then(routerOutlet => {
+    // is the action result an Error?
+    if (template instanceof Error) {
+      this._renderError(location, template)
+      return Promise.resolve(true)
+    }
+
+    // is the action result a false value?
+    if (template === false) return Promise.resolve(false)
+
+    return waitFor(() => document.querySelector(this._rootOutletSelector))
+      .then(() => {
+        const routerOutlet = document.querySelector(this._rootOutletSelector)
         const ok = Object.keys(outlets)
 
         // find any outlets and clear them if they're not a defined outlet for the route
@@ -364,8 +397,8 @@ class Router {
 
         // do we have named outlets to render?
         if (ok.length) {
-          ok.forEach(k => {
-            waitFor(() => {
+          return Promise.all(
+            ok.map(k => waitFor(() => {
               const namedOutlets = document.querySelectorAll(k)
               return namedOutlets.length > 0 ? namedOutlets : false
             })
@@ -375,70 +408,74 @@ class Router {
                   ? result.then(template => this._renderIntoAllOutlets(template, allOutlets))
                   : this._renderIntoAllOutlets(result, allOutlets)
               })
-              .catch(e => this._routerOptions.warnOnMissingOutlets && console.warn(e))
-          })
+              .catch(e => this._routerOptions.warnOnMissingOutlets && console.warn(e)))
+          ).then(() => true)
+        } else {
+          return Promise.resolve(true)
         }
       })
-      .catch(e => console.warn(e))
   }
 
   /**
    * Render a template into a router outlet
-   * @param template
-   * @param routerOutlet
+   * @param {ActionResult} result
+   * @param {HTMLElement} routerOutlet
    * @private
    */
-  _renderIntoOutlet (template, routerOutlet) {
-    if (this._isSameOutletContent(template, routerOutlet)) {
+  _renderIntoOutlet (result, routerOutlet) {
+    if (!result) return
+    if (this._isSameOutletContent(result, routerOutlet)) {
       return
     }
-    this._routerOptions.render(template, routerOutlet)
-    this._outletCache.set(routerOutlet, template)
+    renderOutlet(result, routerOutlet)
+    this._outletCache.set(routerOutlet, result)
   }
 
   /**
    * Render a template into multiple outlets
-   * @param template
-   * @param routerOutlets
+   * @param {ActionResult} result
+   * @param {Array<HTMLElement>} routerOutlets
    * @private
    */
-  _renderIntoAllOutlets (template, routerOutlets) {
+  _renderIntoAllOutlets (result, routerOutlets) {
     for (let i = 0; i < routerOutlets.length; i++) {
       const ro = routerOutlets[i]
-      this._renderIntoOutlet(template, ro)
+      this._renderIntoOutlet(result, ro)
     }
   }
 
   /**
    * Check if what has already been rendered is the same content
-   * @param template
-   * @param routerOutlet
+   * @param {ActionResult} result
+   * @param {HTMLElement} routerOutlet
    * @returns {boolean}
    * @private
    */
-  _isSameOutletContent (template, routerOutlet) {
-    if (typeof template === 'string' && this._outletCache.has(routerOutlet) && this._outletCache.get(routerOutlet) === template) {
+  _isSameOutletContent (result, routerOutlet) {
+    if (typeof result === 'string' && this._outletCache.has(routerOutlet) && this._outletCache.get(routerOutlet) === result) {
       return true
     }
     return false
   }
 
   /**
-   * Navigate to a path
-   * @param {String|Object} path
-   * @param {Object} [state]
+   * Navigate to a location
+   * @param {string|RouteLocation} location
+   * @param {object|undefined} state
+   * @returns {Promise}
    */
-  push (path, state) {
-    this._navigate(path, state)
+  push (location, state) {
+    return this._navigate(location, state)
   }
 
   /**
-   * Replace the current path
-   * @param {String|Object} path
-   * @param {Object} [state]
+   * Replace the current location
+   * @param {string|RouteLocation} location
+   * @param {object|undefined} state
+   * @returns {Promise}
    */
-  replace (path, state) {
-    this._navigate(path, state, true)
+  replace (location, state) {
+    return this._navigate(location, state, true)
   }
 
   /**
@@ -448,190 +485,215 @@ class Router {
    * If an errorHandler is supplied with the router options then it is invoked with
    * the error and context arguments and the resulting template is rendered. If no errorHandler
    * is specified then a generic error message is rendered
-   * @param {String|Object} path
-   * @param state
-   * @param replaceHistory
+   * @param {string|RouteLocation} location
+   * @param {object|undefined} state
+   * @param {boolean} replaceHistory
+   * @returns {Promise}
    * @private
    */
-  _navigate (path, state, replaceHistory = false) {
-    let np = path
-    let pathname = path
-    let search = ''
-    let ns = state
-
-    if (typeof path === 'string' && path.includes('?')) {
-      pathname = path.substring(0, path.indexOf('?'))
-      search = path.substring(path.indexOf('?'))
-    } else if (typeof path === 'string' && path.includes('#')) {
-      pathname = path.substring(0, path.indexOf('#'))
-    }
-
-    if (typeof path === 'object') {
-      if (this._routerOptions.mode === 'history' && !path.pathname) throw new Error(`Unable to navigate to: ${path}`)
-      np = path.pathname || this.location.pathname
-      pathname = np
-      if (path.search) {
-        np = `${np}${path.search}`
-        search = path.search
-      }
-      if (path.hash) np = `${np}${path.hash}`
-      ns = state
-      if (path.state) {
-        ns = state
-      }
-    }
+  _navigate (location, state, replaceHistory = false) {
+    const thisLocation = this._normalizeLocation(location)
 
     // ignore the current URL if we are not replacing history
-    if (!replaceHistory && pathname === this.location.pathname) {
-      return
+    if (!replaceHistory && thisLocation.pathname === this.location.pathname) {
+      return Promise.resolve()
+    }
+
+    // find route
+    const { actionResult, context } = this._resolveRoute(thisLocation)
+
+    if (!actionResult) {
+      this._routerOptions.changeHistoryState && this._setState(thisLocation.href, state, replaceHistory)
+      const err = new Error('not_found')
+      this._renderError(thisLocation, err)
+      return Promise.reject(err)
+    }
+
+    // is the action result a redirect?
+    if (typeof actionResult === 'object' && actionResult.redirect) {
+      const state = { from: location }
+      return actionResult.redirect !== this.location.pathname ? this.push(actionResult.redirect, state) : Promise.resolve()
+    }
+
+    // is the action result an Error?
+    if (actionResult instanceof Error) {
+      this._renderError(thisLocation, actionResult)
+      return Promise.reject(actionResult)
+    }
+
+    // is the action result a false value?
+    if (actionResult === false) return Promise.resolve()
+
+    // render route
+    return this._renderActionResult(thisLocation, context, actionResult, state, replaceHistory)
+      .then(result => {
+        if (typeof result === 'object' && result.redirect) {
+          const state = { from: thisLocation.href }
+          return this.push(result.redirect, state)
+        }
+        result && this._routerOptions.changeHistoryState && this._setState(thisLocation.href, state, replaceHistory)
+        return Promise.resolve(result)
+      })
+      .catch(e => {
+        this._renderError(thisLocation, e)
+        throw e
+      })
+  }
+
+  /**
+   * Normalise a location - can be string or location object
+   * @param location
+   * @returns {RouteLocation}
+   * @private
+   */
+  _normalizeLocation (location) {
+    const loc = {
+      host: undefined,
+      protocol: undefined,
+      href: undefined,
+      pathname: undefined,
+      search: undefined,
+      hash: undefined
+    }
+
+    if (typeof location === 'object') {
+      if (this._routerOptions.mode === 'history' && !location.pathname) throw new Error(`Unable to navigate to: ${location}`)
+      let href = location.href || this.location.href
+      loc.pathname = location.pathname || this.location.pathname
+      if (location.search && location.search !== '' && !href.includes(location.search)) {
+        href = `${href}${location.search}`
+        loc.search = location.search
+      }
+      if (location.hash && location.hash !== '' && !href.includes(location.hash)) {
+        href = `${href}${location.hash}`
+        loc.hash = location.hash
+      }
+      loc.hash = location.hash || this.location.hash
+      loc.search = location.search || this.location.search
+      loc.host = location.host || this.location.host
+      loc.protocol = location.protocol || this.location.protocol
+      loc.href = href
+    } else if (typeof location === 'string') {
+      const url = new URL(/^https?:\/\//.test(location) ? location : `${window.location.protocol}//${window.location.host}${location}`)
+      loc.host = url.host
+      loc.protocol = url.protocol
+      loc.href = url.href
+      loc.pathname = url.pathname
+      loc.search = url.search
+      loc.hash = url.hash
+      if (location.includes('?')) {
+        loc.pathname = location.substring(0, location.indexOf('?'))
+        loc.search = location.substring(location.indexOf('?'))
+      } else if (location.includes('#')) {
+        loc.pathname = location.substring(0, location.indexOf('#'))
+      }
     }
 
     if (this._routerOptions.mode === 'hash') {
-      np = `${window.location.pathname}${search}#${pathname}`
+      loc.href = `${window.location.pathname}${loc.search || ''}#${loc.pathname}`
     }
 
-    // set the state
-    if (this._routerOptions.changeHistoryState) {
-      this._setState(np, ns, replaceHistory)
-    }
+    return loc
+  }
 
-    this._resolveRoute(pathname)
-      .catch(e => this._renderError(pathname, e))
+  /**
+   * Render an action result
+   * @param {RouteLocation} location
+   * @param {object} context
+   * @param {ActionResult} actionResult
+   * @param {object|undefined} state
+   * @param {boolean} replaceHistory
+   * @returns {Promise}
+   * @private
+   */
+  _renderActionResult (location, context, actionResult) {
+    if (hasKey(actionResult, 'template') && hasKey(actionResult, 'outlets')) {
+      const { template, outlets } = actionResult
+      return this._render(location, context, template, outlets)
+    } else {
+      return this._render(location, context, actionResult, {})
+    }
+  }
+
+  /**
+   * Get a route context
+   * @param {Route} route
+   * @param {RouteLocation} location
+   * @returns {RouteContext}
+   * @private
+   */
+  _getRouteContext (route, location) {
+    let params = {
+      ...this._getQueryStringParams(location)
+    }
+    const routeContext = {
+      context: this._routerOptions.context,
+      router: this,
+      route,
+      location,
+      params
+    }
+    if (route) {
+      params = {
+        ...params,
+        ...this._getUrlParams(location, route)
+      }
+      routeContext.params = params
+    }
+    return routeContext
   }
 
   /**
    * Resolve a route
    * If the resolveRoute function is specified, it is invoked to get the route action result.
-   * If no resolveRoute is defined then execution is passed to the _findAndRenderRoute method
-   * @param path
-   * @returns {Promise}
+   * If no resolveRoute is defined then the route action result is matched against any defined routes
+   * @param {RouteLocation} pathname
+   * @returns {{actionResult: ActionResult|undefined, context: RouteContext}}
    * @private
    */
-  _resolveRoute (path) {
-    if (this._routerOptions.resolveRoute) {
-      const route = this._findRoute(path)
-      let params = {
-        ...this._getQueryStringParams()
+  _resolveRoute (location) {
+    const route = this._findRoute(location.pathname)
+    const context = this._getRouteContext(route, location)
+    try {
+      const actionResult = this._routerOptions.resolveRoute(context, context.params)
+      if (actionResult) {
+        return { actionResult, context }
       }
-      const context = {
-        ...this._routerOptions.context,
-        router: this,
-        route: route || {},
-        path,
-        params
+      if (!route) {
+        return { actionResult: undefined, context }
       }
-      if (route) {
-        params = {
-          ...params,
-          ...this._getUrlParams(path, route)
-        }
-        context.route = route
-        context.params = params
-        const routeActionResult = this._routerOptions.resolveRoute(context, params)
-        if (routeActionResult) {
-          return hasKey(routeActionResult, 'template') && hasKey(routeActionResult, 'outlets')
-            ? this._renderRouteActionResult(path, context, routeActionResult.template, routeActionResult.outlets)
-            : this._renderRouteActionResult(path, context, routeActionResult)
-        } else {
-          return this._findAndRenderRoute(path)
-        }
-      } else {
-        const routeActionResult = this._routerOptions.resolveRoute(context, params)
-        if (routeActionResult) {
-          return hasKey(routeActionResult, 'template') && hasKey(routeActionResult, 'outlets')
-            ? this._renderRouteActionResult(path, context, routeActionResult.template, routeActionResult.outlets)
-            : this._renderRouteActionResult(path, context, routeActionResult)
-        } else {
-          return Promise.reject(new Error('not_found'))
-        }
-      }
+      return { actionResult: route.action(context, context.params), context }
+    } catch (e) {
+      this._renderError(location, e)
+      throw e
     }
-    return this._findAndRenderRoute(path)
   }
 
   /**
    * Find and render a route
    * This involves matching a route and then rendering it.
    * It is wrapped in a Promise so routes can be async and resolved before rendering.
-   * @param path
+   * @param {RouteLocation} location
    * @returns {Promise}
    * @private
    */
-  _findAndRenderRoute (path) {
-    return new Promise((resolve, reject) => {
-      const route = this._findRoute(path)
-      if (route) {
-        const params = {
-          ...this._getQueryStringParams(),
-          ...this._getUrlParams(path, route)
-        }
-        const context = {
-          ...this._routerOptions.context,
-          router: this,
-          route,
-          path,
-          params
-        }
-        const actionResult = route.action(context, params)
-        if (isPromise(actionResult)) {
-          actionResult
-            .then(template => {
-              this._render(path, context, template, route.outlets)
-              resolve()
-            })
-            .catch(e => {
-              reject(e)
-            })
-        } else {
-          this._render(path, context, actionResult, route.outlets)
-          resolve()
-        }
-      } else {
-        reject(new Error('not_found'))
-      }
-    })
-  }
+  _findAndRenderRoute (location) {
+    // find route
+    const { actionResult, context } = this._resolveRoute(location)
 
-  /**
-   * Render an action result
-   * @param actionResult
-   * @private
-   */
-  _renderRouteActionResult (path, context, actionResult, outlets = {}) {
-    return new Promise((resolve, reject) => {
-      if (isPromise(actionResult)) {
-        actionResult
-          .then(result => {
-            if (hasKey(result, 'template') && hasKey(result, 'outlets')) {
-              return isPromise(result.template)
-                ? result.template.then(template => {
-                  return { template, outlets: result.outlets }
-                })
-                : Promise.resolve({ template: result.template, outlets: result.outlets })
-            } else {
-              return Promise.resolve({ template: result, outlets })
-            }
-          })
-          .then(result => {
-            this._render(path, context, result.template, result.outlets)
-            resolve()
-          })
-          .catch(e => {
-            reject(e)
-          })
-      } else {
-        this._render(path, context, actionResult, outlets)
-        resolve()
-      }
-    })
+    if (!actionResult) {
+      throw new Error('not_found')
+    }
+
+    return this._renderActionResult(location, context, actionResult)
   }
 
   /**
    * Set the history state
    * This pushes or replaces the current state
-   * @param path
-   * @param state
-   * @param replace
+   * @param {String} path
+   * @param {any} state
+   * @param {Boolean} replace
    * @private
    */
   _setState (path, state, replace = false) {
@@ -644,47 +706,35 @@ class Router {
 
   /**
    * Handle a generic error
-   * @param path
+   * @param {RouteLocation} location
+   * @param {Error} error
    * @private
    */
-  _renderError (path, error) {
-    console.error(`A router error occurred for path '${path}'`, error)
+  _renderError (location, error) {
+    console.error(`A router error occurred for location '${location.href}'`, error)
     if (this._routerOptions.errorHandler) {
       const err = {
         message: error.message,
         status: error.message === 'not_found' ? 404 : 500
       }
-      const context = {
-        ...this._routerOptions.context,
-        router: this,
-        path,
-        location: {
-          ...this.location,
-          pathname: path
-        }
-      }
+      const context = this._getRouteContext(this._findRoute(location.pathname), location)
       const errorTemplate = this._routerOptions.errorHandler(err, context)
       if (isPromise(errorTemplate)) {
         errorTemplate
-          .then(template => {
-            this._render(path, context, template)
-          })
-          .catch(e => {
-            // fallback to generic error template if the errorHandler promise fails - report on both errors
-            this._render(path, context, `<div><strong>Router error from <code>errorHandler</code></strong>: ${e.message}, original error: ${error.message}</div>`)
-          })
+          .then(template => this._render(location, context, template))
+          .catch(e => this._render(location, context, `<div><strong>Router error from <code>errorHandler</code></strong>: ${e.message}, original error: ${error.message}</div>`))
       } else {
-        this._render(path, context, errorTemplate)
+        this._render(location, context, errorTemplate)
       }
     } else {
       // use generic error template as a fallback
-      this._render(path, null, `<div><strong>Router error</strong>: ${error.message}</div>`)
+      this._render(location, null, `<div><strong>Router error</strong>: ${error.message}</div>`)
     }
   }
 
   /**
    * Go forwards or backwards n pages in history
-   * @param n
+   * @param {Number} n
    */
   go (n) {
     window.history.go(n)
@@ -706,7 +756,7 @@ class Router {
 
   /**
    * Start the router by rendering the route for the current location
-   * @param {String|Object} location
+   * @param {string|RouteLocation} location
    */
   start (location = this.location) {
     if (/complete|interactive|loaded/.test(document.readyState)) {
@@ -717,17 +767,13 @@ class Router {
       document.addEventListener('DOMContentLoaded', () => this.replace(location))
     }
   }
-
-  _getUrl (path) {
-    return new URL(`${/https?/.test(path) ? '' : `${this.location.protocol}//${this.location.host}`}${path}`)
-  }
 }
 
 /**
  * Function to create a Router class instance
- * @param {Array} routes
+ * @param {Routes} routes
  * @param {string} rootOutletSelector
- * @param {Object|undefined} options
+ * @param {RouterOptions|undefined} options
  * @returns {Router}
  */
 export function createRouter (routes, rootOutletSelector, options = {}) {
