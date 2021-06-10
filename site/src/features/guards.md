@@ -4,7 +4,7 @@ title: FicusJS router documentation - Guards
 ---
 # Guards
 
-You can guard navigations either by redirecting it or canceling it using the
+You can guard navigations either by redirecting it or cancelling it.
 
 ## Global guards
 
@@ -13,15 +13,18 @@ You can use the `resolveRoute` option to redirect a route or cancel it:
 ```js
 {
   resolveRoute (context, params) {
-    // do some logic here
+    // request a redirect
     return { redirect: '/login' }
+
+    // cancel a route
+    return false
   }
 }
 ```
 
 ## Route guards
 
-You can redirect from a route by returning a redirect object from the action function:
+You can redirect or cancel a route from the action function:
 
 ```js
 const routes = [
@@ -32,12 +35,9 @@ const routes = [
     }
   },
   {
-    path: '/admin',
-    action(context) {
-      if (!context.user) {
-        return { redirect: '/login' }
-      }
-      return 'admin-page'
+    path: '/cancelled',
+    action () {
+      return false
     }
   }
 ]

@@ -502,7 +502,7 @@ class Router {
     // find route
     const { actionResult, context } = this._resolveRoute(thisLocation)
 
-    if (!actionResult) {
+    if (actionResult == null) {
       this._routerOptions.changeHistoryState && this._setState(thisLocation.href, state, replaceHistory)
       const err = new Error('not_found')
       this._renderError(thisLocation, err)
@@ -517,6 +517,7 @@ class Router {
 
     // is the action result an Error?
     if (actionResult instanceof Error) {
+      this._routerOptions.changeHistoryState && this._setState(thisLocation.href, state, replaceHistory)
       this._renderError(thisLocation, actionResult)
       return Promise.reject(actionResult)
     }
@@ -656,7 +657,7 @@ class Router {
     const context = this._getRouteContext(route, location)
     try {
       const actionResult = this._routerOptions.resolveRoute(context, context.params)
-      if (actionResult) {
+      if (actionResult != null) {
         return { actionResult, context }
       }
       if (!route) {
