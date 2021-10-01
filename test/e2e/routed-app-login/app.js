@@ -1,8 +1,8 @@
 import { html, createComponentWithStore } from '../util/component.js'
 import { getRouter } from './router.js'
 import { getStore } from './store.js'
-
 import { createTopNavComponent } from './components/nav.js'
+import './views/index.js'
 
 function isLoginPath (path) {
   return path === '/test/e2e/routed-app-login/login' || path === '/test/e2e/routed-app-login/login/'

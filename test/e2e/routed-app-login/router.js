@@ -11,7 +11,6 @@ export function getRouter (resolveRoute, errorHandler) {
       { path: '/test/e2e/routed-app-login/one', component: 'page-one' },
       { path: '/test/e2e/routed-app-login/two', component: 'page-two' }
     ], '#router-outlet', { resolveRoute, errorHandler })
-    import('./views/index.js')
   }
   return router
 }
