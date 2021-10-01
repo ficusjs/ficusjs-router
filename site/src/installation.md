@@ -12,7 +12,7 @@ We recommend using native ES modules in the browser.
 
 ```html
 <script type="module">
-  import { createRouter, getRouter } from 'https://cdn.skypack.dev/@ficusjs/router@2'
+  import { createRouter, getRouter } from 'https://cdn.skypack.dev/@ficusjs/router@3'
 </script>
 ```
 

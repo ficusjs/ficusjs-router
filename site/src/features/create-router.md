@@ -8,7 +8,7 @@ Create your router instance using the `createRouter` function passing an array o
 
 ```js
 // import the function
-import { createRouter } from 'https://cdn.skypack.dev/@ficusjs/router@2'
+import { createRouter } from 'https://cdn.skypack.dev/@ficusjs/router@3'
 
 // create list of routes
 const routes = [

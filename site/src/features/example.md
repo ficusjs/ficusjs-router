@@ -10,7 +10,7 @@ Import the router creator function into your Javascript main file:
 
 ```js
 // import the createRouter function
-import { createRouter } from 'https://cdn.skypack.dev/@ficusjs/router@2'
+import { createRouter } from 'https://cdn.skypack.dev/@ficusjs/router@3'
 
 // create list of routes
 const routes = [

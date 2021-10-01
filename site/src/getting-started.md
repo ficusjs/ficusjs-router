@@ -13,7 +13,7 @@ Create an `index.html` file and copy the following between the `<body>` tags.
 <div id="router-outlet"></div>
 
 <script type="module">
-import { createRouter } from 'https://cdn.skypack.dev/@ficusjs/router@2'
+import { createRouter } from 'https://cdn.skypack.dev/@ficusjs/router@3'
 import { createComponent } from 'https://cdn.skypack.dev/ficusjs@3'
 import { renderer, html } from 'https://cdn.skypack.dev/@ficusjs/renderers@3/lit-html'
 
