@@ -86,6 +86,6 @@ declare class Router {
 
 type GetRouterFunction = () => Router
 
-export declare function createRouter (routes: Routes, options?: RouterOptions): Router
+export declare function createRouter (routes: Routes, rootOutletSelector: string, options?: RouterOptions): Router
 
 export declare function getRouter (): Router
