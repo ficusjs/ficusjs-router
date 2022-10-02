@@ -46,6 +46,6 @@
     "slugify": "1.6.0",
     "standard": "16.0.3",
     "terser": "5.9.0",
-    "workbox-cli": "6.3.0"
+    "workbox-cli": "6.5.4"
   }
 }
