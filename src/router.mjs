@@ -5,6 +5,7 @@ import { hasKey } from './util/object-has-key.mjs'
 import { elementEmpty } from './util/element-empty.mjs'
 import { renderOutlet } from './util/render-outlet.mjs'
 import { flattenRoutes } from './util/flatten-routes.mjs'
+import { emit } from './util/emit.mjs'
 
 class UrlSearchOrHashParams {
   constructor (url) {
@@ -127,6 +128,36 @@ class UrlSearchOrHashParams {
   }
 }
 
+class Stack {
+  constructor () {
+    this.items = []
+  }
+
+  push (element) {
+    this.items.push(element)
+  }
+
+  pop () {
+    this.items.pop()
+  }
+
+  peek () {
+    return this.items[this.items.length - 1]
+  }
+
+  isEmpty () {
+    return this.items.length === 0
+  }
+
+  clear () {
+    this.items = []
+  }
+
+  size () {
+    return this.items.length
+  }
+}
+
 class Router {
   constructor (routes, rootOutletSelector, options) {
     if (typeof window !== 'undefined' && window.__ficusjs__ && window.__ficusjs__.router) {
@@ -134,6 +165,9 @@ class Router {
     }
 
     this._rootOutletSelector = rootOutletSelector
+
+    // create stack
+    this.stack = new Stack()
 
     // process routes
     this._routes = this._processRoutes(routes)
@@ -148,6 +182,7 @@ class Router {
     if (typeof window !== 'undefined') {
       window.addEventListener('popstate', () => {
         this._findAndRenderRoute(this.location)
+          .then(() => this.stack.pop())
           .catch(e => {
             this._renderError(this.location, e)
             throw e
@@ -429,6 +464,7 @@ class Router {
     }
     renderOutlet(result, routerOutlet)
     this._outletCache.set(routerOutlet, result)
+    this._emitRouterOutletChangeEvent(routerOutlet)
   }
 
   /**
@@ -442,6 +478,19 @@ class Router {
       const ro = routerOutlets[i]
       this._renderIntoOutlet(result, ro)
     }
+  }
+
+  /**
+   * Emit a router outlet change event
+   * @private
+   * @param {HTMLElement} routerOutlet the router outlet to emit the change event for
+   */
+  _emitRouterOutletChangeEvent (routerOutlet) {
+    emit(routerOutlet, 'outlet-change', {
+      detail: {
+        outlet: routerOutlet
+      }
+    })
   }
 
   /**
@@ -701,6 +750,7 @@ class Router {
     if (replace) {
       window.history.replaceState(state, null, path)
     } else {
+      this.stack.push(path)
       window.history.pushState(state, null, path)
     }
   }
