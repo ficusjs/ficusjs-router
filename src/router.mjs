@@ -1,11 +1,11 @@
 import { waitFor } from './util/wait-for.mjs'
-import { stripTrailingSlash } from './util/slashes.mjs'
 import { isPromise } from './util/is-promise.mjs'
 import { hasKey } from './util/object-has-key.mjs'
 import { elementEmpty } from './util/element-empty.mjs'
 import { renderOutlet } from './util/render-outlet.mjs'
 import { flattenRoutes } from './util/flatten-routes.mjs'
 import { emit } from './util/emit.mjs'
+import { addMatcherToRoute } from './util/add-matcher-to-route.mjs'
 
 class UrlSearchOrHashParams {
   constructor (url) {
@@ -293,41 +293,7 @@ class Router {
    * @private
    */
   _processRoutes (routes) {
-    return flattenRoutes(routes).map(r => {
-      const nr = {
-        ...r,
-        matcher: (path) => {
-          return stripTrailingSlash(r.path) === stripTrailingSlash(path) ? path : undefined
-        }
-      }
-      if (r.component && !r.action) nr.action = () => r.component
-      if (/:[^/]+/.test(r.path)) {
-        const keys = r.path.match(/(:[^/]+)/gm)
-        if (keys && keys.length > 0) {
-          nr.urlParamKeys = keys.map(k => k.substring(1))
-        }
-        const pathRegexStr = stripTrailingSlash(r.path.replace(/:[^/]+/g, '([^/]+)'))
-        nr.pathRegex = new RegExp(`^${pathRegexStr}$`)
-        nr.pathRegexCapture = new RegExp(pathRegexStr, 'gm')
-        nr.matcher = (path) => {
-          if (nr.pathRegex.test(path)) {
-            const params = {}
-            let v
-            while ((v = nr.pathRegexCapture.exec(path)) !== null) {
-              if (v && v.length === nr.urlParamKeys.length + 1) {
-                const nv = v.slice(1)
-                for (let i = 0; i < nv.length; i++) {
-                  params[nr.urlParamKeys[i]] = nv[i]
-                }
-              }
-            }
-            return params
-          }
-          return undefined
-        }
-      }
-      return nr
-    })
+    return flattenRoutes(routes).map(r => addMatcherToRoute(r))
   }
 
   /**
@@ -827,7 +793,7 @@ class Router {
  * @param {RouterOptions|undefined} options
  * @returns {Router}
  */
-export function createRouter (routes, rootOutletSelector, options = {}) {
+function createRouter (routes, rootOutletSelector, options = {}) {
   const router = new Router(routes, rootOutletSelector, options)
 
   // render the initial route
@@ -840,8 +806,10 @@ export function createRouter (routes, rootOutletSelector, options = {}) {
  * Function to get the running Router instance
  * @returns {Router}
  */
-export function getRouter () {
+function getRouter () {
   if (typeof window !== 'undefined' && window.__ficusjs__ && window.__ficusjs__.router) {
     return window.__ficusjs__.router
   }
 }
+
+export { createRouter, getRouter, addMatcherToRoute }

@@ -55,6 +55,7 @@ export type Route = {
   action: (context: RouteContext, params: QueryParams) => ActionResult
   outlets?: Outlets
   children?: Array<Route>
+  matcher?: (path: string) => QueryParams | string | undefined
 }
 
 export interface RouterLocation {
@@ -89,3 +90,5 @@ type GetRouterFunction = () => Router
 export declare function createRouter (routes: Routes, rootOutletSelector: string, options?: RouterOptions): Router
 
 export declare function getRouter (): Router
+
+export declare function addMatcherToRoute (route: Route): Route
