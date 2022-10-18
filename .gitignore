@@ -4,3 +4,4 @@ test/snapshots
 .idea
 .vscode
 *.log
+tmp

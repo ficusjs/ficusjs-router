@@ -18,13 +18,6 @@ function flatten (stack, parentRouteStack, routes, clearParentRouteStack = true)
   })
 }
 
-export function flattenRoutes (routes) {
-  const stack = new Stack()
-  const parentRouteStack = new Stack()
-  flatten(stack, parentRouteStack, routes)
-  return stack
-}
-
 function flattenChildren (stack, parentRouteStack, route) {
   let children = [...route.children]
   let newRoute
@@ -53,4 +46,11 @@ function copyRouteAndAdjustPath (route, parentRouteStack) {
     nr.path = `${last.path}${nr.path}`
   }
   return nr
+}
+
+export function flattenRoutes (routes) {
+  const stack = new Stack()
+  const parentRouteStack = new Stack()
+  flatten(stack, parentRouteStack, routes)
+  return stack
 }
