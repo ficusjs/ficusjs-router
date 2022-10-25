@@ -1,6 +1,6 @@
 {
   "name": "@ficusjs/router",
-  "version": "3.3.2",
+  "version": "3.4.0",
   "description": "Lightweight standalone client-side router that supports history and hash routing",
   "type": "module",
   "main": "dist/router.mjs",
@@ -8,7 +8,7 @@
   "types": "types/router.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "rollup -i src/router.mjs -o dist/router.mjs -f es -p \"terser={mangle: { keep_fnames: true, toplevel: true, module: true }}\" -p \"filesize={}\"",
+    "build": "rollup -i src/router.mjs -o dist/router.mjs -f es -m -p \"terser={mangle: { keep_fnames: true, toplevel: true, module: true }}\" -p \"filesize={}\"",
     "build:dev": "rollup -i src/router.mjs -o tmp/router.mjs -f es",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
