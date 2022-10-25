@@ -1,7 +1,5 @@
-// import { renderer, html } from 'https://cdn.skypack.dev/@ficusjs/renderers@4/lit-html'
-import { renderer, html } from '../lib/lit-html.mjs'
-// import { createComponent as componentCreator, createStore, withStore } from 'https://cdn.skypack.dev/ficusjs'
-import { createComponent as componentCreator, createStore, withStore } from '../lib/index.mjs'
+import { renderer, html } from 'https://cdn.skypack.dev/@ficusjs/renderers@5/lit-html'
+import { createComponent as componentCreator, createStore, withStore } from 'https://cdn.skypack.dev/ficusjs@5'
 import { navigateTo } from './methods.js'
 
 function createComponent (tagName, options) {
