@@ -9,5 +9,7 @@ export default defineConfig({
     testsuitesTitle: 'Cypress Tests'
   },
   video: false,
-  e2e: {}
+  e2e: {
+    testIsolation: false
+  }
 })
