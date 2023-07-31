@@ -17,11 +17,11 @@ Lightweight standalone client-side router that supports history and hash routing
 - Outlets act as placeholders for rendering content per route
 - Control navigation with methods
 - Lazy load views based on route
-- Start router programatically
+- Start router programmatically
 
 ## Documentation
 
-See the [full documentation](https://router.ficusjs.org).
+See the [full documentation](https://docs.ficusjs.org/router).
 
 ## Getting started
 
